@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 from torchvision import transforms
-import os
 import numpy as np
 from PIL import Image
+
+from get_abspath import main_abspath
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -78,7 +79,7 @@ class Classification(nn.Module):
 
 
 art_model = Classification()
-art_model.load_state_dict(torch.load("../pre-trained/art_classification.pkl"))
+art_model.load_state_dict(torch.load(f"{main_abspath()}/pre-trained/art_classification.pkl"))
 art_model.to(device)
 
 
@@ -115,8 +116,11 @@ def result_(img_path):
 
 
 if __name__ == '__main__':
-    file_path = os.path.abspath("./")[:-6]
-    img_path = f"{file_path[:-5]}\\dataset\\abstract\\ (1).jpg"
+    import get_abspath
+
+    project_path = get_abspath.project_abspath()
+
+    img_path = f"{project_path}/dataset/abstract/ (1).jpg"
 
     test_label = result_(img_path)
     print(test_label)
