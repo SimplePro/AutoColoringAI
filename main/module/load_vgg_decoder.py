@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 
+
 def load(vgg_path, decoder_path, device):
     # 인코더(Encoder) 정의
     vgg = nn.Sequential(
