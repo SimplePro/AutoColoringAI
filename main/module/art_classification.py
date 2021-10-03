@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
 from torchvision import transforms
-
 import os
-
 import numpy as np
 from PIL import Image
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -77,16 +77,15 @@ class Classification(nn.Module):
         return out
 
 
-
 art_model = Classification()
-art_model.load_state_dict(torch.load(f"{os.getcwd()}\\main\\pre-trained\\art_classification.pkl"))
+art_model.load_state_dict(torch.load("../pre-trained/art_classification.pkl"))
 art_model.to(device)
 
 
-# x shape of (128, 128)
+# x shape is (128, 128), input type is PIL.Image, x that is return type is torch.tensor
 def preprocessing(x):
 
-    result = np.repeat(np.array(x), 3).reshape(128, 128, 3)
+    result = np.repeat(np.array(x), 3).reshape((128, 128, 3))
     
     result = Image.fromarray(np.uint8(result)).convert("RGB")
     result = transforms.Compose([transforms.ToTensor()])(result).unsqueeze(0)
@@ -96,9 +95,27 @@ def preprocessing(x):
 
 # x shape of (1, 3, 128, 128)
 def predict(x):
-    label_dir = {0: "abstract", 1:"cityscape", 2:"landscape", 3:"portrait", 4:"still-life"}
+    label_dir = {0: "abstract", 1: "cityscape", 2: "landscape", 3: "portrait", 4: "still-life"}
 
-    predict = torch.argmax(art_model(x)).item()
-    predict_label = label_dir[predict]
+    pred = torch.argmax(art_model(x)).item()
+    predict_label = label_dir[pred]
 
     return predict_label
+
+
+if __name__ == '__main__':
+
+    import matplotlib.pyplot as plt
+
+    file_path = os.path.abspath("./")[:-6]
+
+    test_image = Image.open(f"{file_path[:-5]}\\dataset\\abstract\\ (1).jpg").convert("L").resize((128, 128))
+
+    plt.imshow(test_image, cmap="gray")
+    plt.show()
+
+    device = torch.device("cuda")
+
+    test_image = preprocessing(test_image).to(device)
+    test_label = predict(test_image)
+    print(test_label)
