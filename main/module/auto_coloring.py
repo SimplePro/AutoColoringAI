@@ -9,6 +9,8 @@ import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class AutoColoring:
 
@@ -95,8 +97,6 @@ if __name__ == '__main__':
     import os
 
     file_path = os.path.abspath("./")[:-6]
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     auto_coloring = AutoColoring(content_path=f"{file_path[:-5]}\\test_image\\content.jpg",
                                  style_paths=[f"{file_path[:-5]}\\test_image\\style_house.jpg"],
