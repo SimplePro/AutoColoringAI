@@ -103,19 +103,20 @@ def predict(x):
     return predict_label
 
 
+def result_(img_path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    img = Image.open(img_path).convert("L").resize((128, 128))
+
+    img = preprocessing(img).to(device)
+    label = predict(img)
+
+    return label
+
+
 if __name__ == '__main__':
-
-    import matplotlib.pyplot as plt
-
     file_path = os.path.abspath("./")[:-6]
+    img_path = f"{file_path[:-5]}\\dataset\\abstract\\ (1).jpg"
 
-    test_image = Image.open(f"{file_path[:-5]}\\dataset\\abstract\\ (1).jpg").convert("L").resize((128, 128))
-
-    plt.imshow(test_image, cmap="gray")
-    plt.show()
-
-    device = torch.device("cuda")
-
-    test_image = preprocessing(test_image).to(device)
-    test_label = predict(test_image)
+    test_label = result_(img_path)
     print(test_label)
