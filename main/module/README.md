@@ -19,7 +19,7 @@ art_classification
 ```python
 1. preprocessing(x: PIL.Image)
 # input x의 shape은 (128, 128)이여야 한다.
-# output의 shape은 (128, 128, 3)이고, type은 torch.tensor이다.
+# output의 shape은 (1, 3, 128, 128)이고, type은 torch.tensor이다.
 
 2. predict(x: torch.tensor)
 # input x는 preprocessing된 결과에 .to(device)를 해주어야 한다.
