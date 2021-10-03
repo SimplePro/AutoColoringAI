@@ -94,12 +94,12 @@ class AutoColoring:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    import os
+    import get_abspath
 
-    file_path = os.path.abspath("./")[:-6]
+    project_path = get_abspath.project_abspath()
 
-    auto_coloring = AutoColoring(content_path=f"{file_path[:-5]}\\test_image\\content.jpg",
-                                 style_paths=[f"{file_path[:-5]}\\test_image\\style_house.jpg"],
+    auto_coloring = AutoColoring(content_path=f"{project_path}/test_image/content.jpg",
+                                 style_paths=[f"{project_path}/test_image/style_house.jpg"],
                                  size=(128, 128), weights=[1.0])
 
     coloring_result = auto_coloring.result_()
