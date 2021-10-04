@@ -7,10 +7,12 @@ from PyQt5.QtGui import QIcon, QCursor
 from PyQt5 import QtCore
 
 import get_abspath
-
 import art_classification
-
 from bisect import bisect_left
+
+import time
+
+import gc
 
 project_path = get_abspath.project_abspath()
 main_path = get_abspath.main_abspath()
@@ -27,14 +29,21 @@ class RecommendArtThread(QThread):
 
     def run(self):
         global sketch_topic, recommend_art20
+
+        self.parent.btn_enabled(False)
+
+        # 종류 예측
         sketch_topic = art_classification.result_(sketch_path)
 
+        # 같은 종류의 미술 작품들 리스트
         art_dir = os.listdir(f"{project_path}/dataset/{sketch_topic}/")
 
         print(sketch_topic)
 
+        # 유사도가 높은 상위 20개의 미술작품
         recommend_art20 = []
 
+        # 먼저 20개 미술작품 추가.
         for i in range(20):
             recommend_art20.append((art_dir[i], art_classification.mse_loss(sketch_path,
                                                                             f"{project_path}/dataset/{sketch_topic}/{art_dir[i]}")))
@@ -43,6 +52,7 @@ class RecommendArtThread(QThread):
 
         print(recommend_art20)
 
+        # 그 나머지들은 for 문을 돌며 수정
         for i in range(20, len(art_dir)):
             loss_list = [i[1] for i in recommend_art20]
 
@@ -55,7 +65,12 @@ class RecommendArtThread(QThread):
 
         print(recommend_art20)
 
-class MyApp(QWidget):
+        gc.collect()
+
+        self.parent.btn_enabled(True)
+
+
+class MyApp(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -133,8 +148,6 @@ class MyApp(QWidget):
         self.save_btn.clicked.connect(self.clicked_save)
         self.save_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
-        self.show()
-
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -146,15 +159,13 @@ class MyApp(QWidget):
         global sketch_path, sketch_topic
 
         sketch_path = QFileDialog.getOpenFileName(self, "스케치 선택", )[0]
+
         if sketch_path != '':
-            self.btn_disabled()
             self.sketch_img.setStyleSheet(f"image : url({sketch_path});"
                                           "border-radius: 10px; background-color: white;")
 
             recommend_art = RecommendArtThread(self)
             recommend_art.start()
-
-            self.btn_enabled()
 
     # 미술 작품 추가 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_add_art(self):
@@ -172,24 +183,17 @@ class MyApp(QWidget):
     def clicked_save(self):
         print("clicked save btn")
 
-    # 모든 버튼 활성화
-    def btn_enabled(self):
-        self.explorer_btn.setEnabled(True)
-        self.add_art_btn.setEnabled(True)
-        self.painting_btn.setEnabled(True)
-        self.check_result_btn.setEnabled(True)
-        self.save_btn.setEnabled(True)
-
-    # 모든 버튼 비활성화
-    def btn_disabled(self):
-        self.explorer_btn.setEnabled(False)
-        self.add_art_btn.setEnabled(False)
-        self.painting_btn.setEnabled(False)
-        self.check_result_btn.setEnabled(False)
-        self.save_btn.setEnabled(False)
+    # 모든 버튼 컨트롤
+    def btn_enabled(self, boolean):
+        self.explorer_btn.setEnabled(boolean)
+        self.add_art_btn.setEnabled(boolean)
+        self.painting_btn.setEnabled(boolean)
+        self.check_result_btn.setEnabled(boolean)
+        self.save_btn.setEnabled(boolean)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
+    ex.show()
     sys.exit(app.exec_())
