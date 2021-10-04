@@ -1,6 +1,10 @@
 import sys
 import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2
+
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QApplication, QPushButton, QLabel, QFileDialog, QMainWindow, QListWidget, QDesktopWidget, \
     QListWidgetItem, QDoubleSpinBox
@@ -22,10 +26,10 @@ sketch_topic = ''  # 스케치 종류
 recommend_art20 = []  # 추천 미술 작품 Top 20 파일 이름 (filename, loss)
 user_img_path = []  # 사용자가 추가한 미술 작품 경로
 
-painting_art = []  # 적용할 미술 작품
-painting_weights = []  # 적용할 미술 작품들의 적용도
+coloring_art = []  # 적용할 미술 작품
+coloring_weights = []  # 적용할 미술 작품들의 적용도
 
-result = 0  # 채색 결과
+result = np.zeros((128, 128, 3))  # 채색 결과
 
 selected_art_path = ''  # 사용자가 현재 선택한 미술작품 경로
 
@@ -133,18 +137,18 @@ class MyApp(QMainWindow):
         self.art_img.setStyleSheet(f"background-color: white;" "border-radius: 5px;")
 
         # 미술 작품 적용 파일명 리스트위젯
-        self.painting_art_path_list = QListWidget(self)
-        self.painting_art_path_list.resize(150, 220)
-        self.painting_art_path_list.move(790, 100)
-        self.painting_art_path_list.itemDoubleClicked.connect(self.double_clicked_painting_art_path_item)
+        self.coloring_art_path_list = QListWidget(self)
+        self.coloring_art_path_list.resize(150, 220)
+        self.coloring_art_path_list.move(790, 100)
+        self.coloring_art_path_list.itemDoubleClicked.connect(self.double_clicked_coloring_art_path_item)
 
         # 적용도 스핀박스
-        self.painting_weight_spinbox = QDoubleSpinBox(self)
-        self.painting_weight_spinbox.setRange(0, 100)
-        self.painting_weight_spinbox.setSingleStep(0.5)
-        self.painting_weight_spinbox.setPrefix("적용도 (%): ")
-        self.painting_weight_spinbox.move(720, 340)
-        self.painting_weight_spinbox.resize(130, 40)
+        self.coloring_weight_spinbox = QDoubleSpinBox(self)
+        self.coloring_weight_spinbox.setRange(0, 100)
+        self.coloring_weight_spinbox.setSingleStep(0.5)
+        self.coloring_weight_spinbox.setPrefix("적용도 (%): ")
+        self.coloring_weight_spinbox.move(720, 340)
+        self.coloring_weight_spinbox.resize(130, 40)
 
         # 적용 버튼
         self.art_apply_btn = QPushButton("적용", self)
@@ -162,13 +166,13 @@ class MyApp(QMainWindow):
         self.add_art_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
         # 채색 버튼
-        self.painting_btn = QPushButton("", self)
-        self.painting_btn.setStyleSheet(f"image : url({main_path}/ui_imgs/painting_btn_img.png);"
+        self.coloring_btn = QPushButton("", self)
+        self.coloring_btn.setStyleSheet(f"image : url({main_path}/ui_imgs/coloring_btn_img.png);"
                                         "border-radius: 0px;")
-        self.painting_btn.move(50, 430)
-        self.painting_btn.resize(140, 140)
-        self.painting_btn.clicked.connect(self.clicked_painting)
-        self.painting_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.coloring_btn.move(50, 430)
+        self.coloring_btn.resize(140, 140)
+        self.coloring_btn.clicked.connect(self.clicked_coloring)
+        self.coloring_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
 
         # 채색 결과 확인 버튼
         self.check_result_btn = QPushButton("", self)
@@ -220,8 +224,6 @@ class MyApp(QMainWindow):
 
             user_img_path.append(user_img)
 
-            print(user_img_path)
-
     # 추천 미술 작품 아이템이 클릭되었을 때 실행되는 메소드.
     def clicked_recommend_art_path_item(self, item):
         global selected_art_path
@@ -232,45 +234,48 @@ class MyApp(QMainWindow):
 
     # 적용 버튼이 눌렸을 때 실행되는 메소드.
     def clicked_art_apply(self):
-        if selected_art_path != '' and self.painting_weight_spinbox.value() != 0:
-            painting_art.append(selected_art_path)
-            painting_weights.append(self.painting_weight_spinbox.value())
-            self.painting_weight_spinbox.setValue(0)
+        if selected_art_path != '' and self.coloring_weight_spinbox.value() != 0:
+            coloring_art.append(selected_art_path)
+            coloring_weights.append(self.coloring_weight_spinbox.value() / 100)
+            self.coloring_weight_spinbox.setValue(0)
 
             icon = QIcon(selected_art_path)
-            self.painting_art_path_list.addItem(QListWidgetItem(icon, selected_art_path))
-
-            print(painting_art)
-            print(painting_weights)
+            self.coloring_art_path_list.addItem(QListWidgetItem(icon, selected_art_path))
 
     # 적용하려는 미술 작품의 아이템이 더블클릭되었을 때 실행되는 메소드.
-    def double_clicked_painting_art_path_item(self, item):
-        idx = painting_art.index(item.text())
-        del painting_art[idx]
-        del painting_weights[idx]
+    def double_clicked_coloring_art_path_item(self, item):
+        idx = coloring_art.index(item.text())
+        del coloring_art[idx]
+        del coloring_weights[idx]
 
-        self.painting_art_path_list.takeItem(idx)
-
-        print(painting_art)
-        print(painting_weights)
+        self.coloring_art_path_list.takeItem(idx)
 
     # 채색 버튼이 클릭됐을 때 실행되는 메소드.
-    def clicked_painting(self):
-        print("clicked painting btn")
+    def clicked_coloring(self):
+        global result
+
+        self.btn_enabled(False)
+
+        if sum(coloring_weights) == 1:
+            result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights, size=(128, 128)).result_()
+
+        self.btn_enabled(True)
 
     # 채색 결과 확인 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_check_result(self):
-        print("clicked check result btn")
+        plt.imshow(result)
+        plt.show()
 
     # 저장 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_save(self):
-        print("clicked save btn")
+        cv2.imwrite("result.png", result * 255)
+        QFileDialog.getSaveFileName(self, "Save File", "./result.png", "image file(*.png *jpg *jpeg)")
 
     # 모든 버튼 컨트롤
     def btn_enabled(self, boolean):
         self.explorer_btn.setEnabled(boolean)
         self.add_art_btn.setEnabled(boolean)
-        self.painting_btn.setEnabled(boolean)
+        self.coloring_btn.setEnabled(boolean)
         self.check_result_btn.setEnabled(boolean)
         self.save_btn.setEnabled(boolean)
         self.art_apply_btn.setEnabled(boolean)
