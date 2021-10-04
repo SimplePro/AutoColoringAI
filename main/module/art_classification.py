@@ -9,6 +9,7 @@ from get_abspath import main_abspath
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # define vgg network
@@ -104,15 +105,30 @@ def predict(x):
     return predict_label
 
 
+# 이미지 경로를 입력하면 predict 를 진행한다.
 def result_(img_path):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     img = Image.open(img_path).convert("L").resize((128, 128))
 
     img = preprocessing(img).to(device)
     label = predict(img)
 
     return label
+
+
+# 두 이미지의 경로가 들어오면 mse loss 값을 반환한다.
+def mse_loss(img1_p, img2_p):
+    img1 = Image.open(img1_p).convert("L").resize((128, 128))
+    img2 = Image.open(img2_p).convert("L").resize((128, 128))
+
+    img1 = preprocessing(img1).to(device)
+    img2 = preprocessing(img2).to(device)
+
+    img1_feature = art_model.vgg(img1).cpu().detach().numpy().reshape(-1)
+    img2_feature = art_model.vgg(img2).cpu().detach().numpy().reshape(-1)
+
+    loss = np.square(img1_feature - img2_feature).mean()
+
+    return loss
 
 
 if __name__ == '__main__':
@@ -124,3 +140,16 @@ if __name__ == '__main__':
 
     test_label = result_(img_path)
     print(test_label)
+
+    import time
+    import os
+
+    start_time = time.time()
+
+    dir = os.listdir(f"{project_path}/dataset/abstract/")
+    print(len(dir))
+
+    for path in dir:
+        print(mse_loss(f"{project_path}/dataset/abstract/ (1).jpg", f"{project_path}/dataset/abstract/{path}"), end="\r")
+
+    print(time.time() - start_time)
