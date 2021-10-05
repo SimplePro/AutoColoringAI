@@ -281,7 +281,8 @@ class MyApp(QMainWindow):
 
         if sum(coloring_weights) == 1:
             result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights, size=(128, 128)).result_()
-
+            result = (result - result.min()) / (result.max() - result.min())  # 정규화
+            
         self.btn_enabled(True)
 
     # 채색 결과 확인 버튼이 클릭됐을 때 실행되는 메소드.
