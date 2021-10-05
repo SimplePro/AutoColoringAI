@@ -211,9 +211,11 @@ class MyApp(QMainWindow):
     def clicked_explorer(self):
         global sketch_path, sketch_topic, user_img_path, coloring_art, coloring_weights
 
-        sketch_path = QFileDialog.getOpenFileName(self, "스케치 선택", "", "image file(*.png *jpg *jpeg)")[0]
+        path = QFileDialog.getOpenFileName(self, "스케치 선택", "", "image file(*.png *jpg *jpeg)")[0]
 
-        if sketch_path != '':
+        if path != '':
+
+            sketch_path = path
             self.sketch_img.setStyleSheet(f"image : url({sketch_path});"
                                           "border-radius: 5px; background-color: white;")
 
@@ -223,6 +225,7 @@ class MyApp(QMainWindow):
             self.coloring_art_path_list.clear()
             coloring_art = []
             coloring_weights = []
+            self.remain_weight_label.setText(f"남은 적용도: 100%")
 
             user_img_path = []
 
@@ -268,6 +271,8 @@ class MyApp(QMainWindow):
 
         self.coloring_art_path_list.takeItem(idx)
 
+        self.remain_weight_label.setText(f"남은 적용도: {round((1 - sum(coloring_weights)) * 100, 2)}%")
+
     # 채색 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_coloring(self):
         global result
@@ -276,7 +281,6 @@ class MyApp(QMainWindow):
 
         if sum(coloring_weights) == 1:
             result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights, size=(128, 128)).result_()
-            print(result)
 
         self.btn_enabled(True)
 
@@ -290,7 +294,7 @@ class MyApp(QMainWindow):
         save_filepath = QFileDialog.getSaveFileName(self, "Save File", "./result.png", "image file(*.png *jpg *jpeg)")[0]
 
         if save_filepath != '':
-            cv2.imwrite(save_filepath, result)
+            plt.imsave(save_filepath, result)
 
     # 모든 버튼 컨트롤
     def btn_enabled(self, boolean):
