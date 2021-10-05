@@ -42,8 +42,6 @@ class RecommendArtThread(QThread):
     def run(self):
         global sketch_topic, recommend_art20
 
-        self.parent.btn_enabled(False)
-
         # 종류 예측
         sketch_topic = art_classification.result_(sketch_path)
 
@@ -58,6 +56,7 @@ class RecommendArtThread(QThread):
             filepath = f"{project_path}/dataset/{sketch_topic}/{art_dir[i]}"
             recommend_art20.append((filepath, art_classification.mse_loss(sketch_path, filepath)))
 
+        # 유사도 오름차순 정렬
         recommend_art20.sort(key=lambda x: x[1])
 
         # 그 나머지들은 for 문을 돌며 수정
@@ -73,11 +72,13 @@ class RecommendArtThread(QThread):
                 recommend_art20.insert(idx, (art_dir[i], loss))
                 recommend_art20.pop()
 
+            self.parent.progress_label.setText(f"진행률: {round(i / 30, 2)}%")
+
+        self.parent.progress_label.setText(f"진행률: 100%")
+
         gc.collect()
 
         self.parent.btn_enabled(True)
-
-        self.parent.recommend_art_path_list.clear()
 
         for i in recommend_art20:
             filepath = f"{project_path}/dataset/{sketch_topic}/{i[0]}"
@@ -124,6 +125,10 @@ class MyApp(QMainWindow):
         self.art_box.move(350, 10)
         self.art_box.resize(620, 410)
 
+        # 미술 작품 추천 진행률
+        self.progress_label = QLabel("진행률: 0%", self)
+        self.progress_label.move(385, 70)
+
         # 미술 작품 추천 파일명 리스트위젯
         self.recommend_art_path_list = QListWidget(self)
         self.recommend_art_path_list.resize(150, 220)
@@ -141,6 +146,10 @@ class MyApp(QMainWindow):
         self.coloring_art_path_list.resize(150, 220)
         self.coloring_art_path_list.move(790, 100)
         self.coloring_art_path_list.itemDoubleClicked.connect(self.double_clicked_coloring_art_path_item)
+
+        # 미술 작품 남은 적용도
+        self.remain_weight_label = QLabel("남은 적용도: 100%", self)
+        self.remain_weight_label.move(790, 70)
 
         # 적용도 스핀박스
         self.coloring_weight_spinbox = QDoubleSpinBox(self)
@@ -200,13 +209,20 @@ class MyApp(QMainWindow):
 
     # 스케치 찾아보기 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_explorer(self):
-        global sketch_path, sketch_topic, user_img_path
+        global sketch_path, sketch_topic, user_img_path, coloring_art, coloring_weights
 
         sketch_path = QFileDialog.getOpenFileName(self, "스케치 선택", "", "image file(*.png *jpg *jpeg)")[0]
 
         if sketch_path != '':
             self.sketch_img.setStyleSheet(f"image : url({sketch_path});"
                                           "border-radius: 5px; background-color: white;")
+
+            self.btn_enabled(False)
+            self.recommend_art_path_list.clear()
+            self.art_img.setStyleSheet(f"background-color: white;" "border-radius: 5px;")
+            self.coloring_art_path_list.clear()
+            coloring_art = []
+            coloring_weights = []
 
             user_img_path = []
 
@@ -242,6 +258,8 @@ class MyApp(QMainWindow):
             icon = QIcon(selected_art_path)
             self.coloring_art_path_list.addItem(QListWidgetItem(icon, selected_art_path))
 
+            self.remain_weight_label.setText(f"남은 적용도: {round((1 - sum(coloring_weights)) * 100, 2)}%")
+
     # 적용하려는 미술 작품의 아이템이 더블클릭되었을 때 실행되는 메소드.
     def double_clicked_coloring_art_path_item(self, item):
         idx = coloring_art.index(item.text())
@@ -258,6 +276,7 @@ class MyApp(QMainWindow):
 
         if sum(coloring_weights) == 1:
             result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights, size=(128, 128)).result_()
+            print(result)
 
         self.btn_enabled(True)
 
@@ -268,8 +287,10 @@ class MyApp(QMainWindow):
 
     # 저장 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_save(self):
-        cv2.imwrite("result.png", result * 255)
-        QFileDialog.getSaveFileName(self, "Save File", "./result.png", "image file(*.png *jpg *jpeg)")
+        save_filepath = QFileDialog.getSaveFileName(self, "Save File", "./result.png", "image file(*.png *jpg *jpeg)")[0]
+
+        if save_filepath != '':
+            cv2.imwrite(save_filepath, result)
 
     # 모든 버튼 컨트롤
     def btn_enabled(self, boolean):
