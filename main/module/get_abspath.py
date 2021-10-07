@@ -17,12 +17,6 @@ def main_abspath():
 
 
 def project_abspath():
-    i = 0
+    abspath = main_abspath()
 
-    for i in range(len(abspath) - 16, 0, -1):
-        if abspath[i:i+16] == "auto_coloring_ai":
-            break
-
-    if i == 0: return abspath
-
-    return abspath[:i+16]
+    return abspath[:-5]
