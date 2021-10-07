@@ -6,7 +6,7 @@
 ----------------------
 1. 먼저 파이썬이 설치가 되어있어야 한다.    
   
-2. AutoColoringAI - main - module 안에 있는 setup.bat 파일을 한다. (필요한 라이브러리 설치하기 위함)   
+2. AutoColoringAI - main - module 안에 있는 setup.bat 파일을 실행한다. (필요한 라이브러리 설치하기 위함)   
   
 3. datset  
 - https://drive.google.com/file/d/1Bwba4iYhx_M8aZT-lTKtJ0Pa0OClNsck/view?usp=sharing  
