@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QApplication, QPushButton, QLabel, QFileDialog, QMainWindow, QListWidget, QDesktopWidget, \
@@ -15,6 +16,8 @@ import get_abspath
 import art_classification
 from auto_coloring import AutoColoring
 from bisect import bisect_left
+
+import torch
 
 import gc
 
@@ -280,8 +283,12 @@ class MyApp(QMainWindow):
         self.btn_enabled(False)
 
         if sum(coloring_weights) == 1:
-            result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights, size=(128, 128)).result_()
-            result = (result - result.min()) / (result.max() - result.min())  # 정규화
+            try:
+                result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights).result_()
+                result = (result - result.min()) / (result.max() - result.min())  # 정규화
+
+            except Exception as err:
+                print(err)
             
         self.btn_enabled(True)
 
