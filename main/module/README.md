@@ -3,15 +3,16 @@
 AutoColoring
 ----------------------
 ```python
-1. AutoColoring(content_path: str, style_paths: list, size: tuple, weights: list)
+1. AutoColoring(content_path: str, style_paths: list, weights: list)
 # content_path: 채색할 스케치 이미지의 경로.
 # style_paths: 채색되는 미술작품들의 경로.
-# size: 이미지의 크기.
 # weights: 각 미술작품들의 스타일 적용도.  
 
 2. AutoColoring().result_()
 # 결과는 np.array 형태로 반환된다.
-# shape은 (*size, 3) 이다.  
+# 이미지의 비율은 보존하되, 맥스픽셀을 256으로 조정한다.
+# content shape = (a, b, 3)
+# output shape = (256, 256b/a, 3) (a > b)  or  (256a/b, 256, 3) (b > a)
 ```
   
 art_classification
