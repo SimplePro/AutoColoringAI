@@ -14,9 +14,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class AutoColoring:
 
-    def __init__(self, content_path, style_paths, size, weights):
-        self.content_img = Image.open(content_path).convert("RGB").resize(size)
-        self.style_imgs = [Image.open(style_path).convert("RGB").resize(size) for style_path in style_paths]
+    def __init__(self, content_path, style_paths, weights):
+        self.size = list(np.array(Image.open(content_path)).shape[:2][::-1])
+
+        if self.size[0] > self.size[1]:
+            self.size[0], self.size[1] = 256, round(256 * self.size[1] / self.size[0])
+
+        elif self.size[1] > self.size[0]:
+            self.size[0], self.size[1] = round(256 * self.size[0] / self.size[1]), 256
+
+        self.content_img = Image.open(content_path).convert("RGB").resize(self.size)
+        self.style_imgs = [Image.open(style_path).convert("RGB").resize(self.size) for style_path in style_paths]
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -24,7 +32,6 @@ class AutoColoring:
                                                        decoder_path="../pre-trained/decoder.pth",
                                                        device=device)
 
-        self.size = size
         self.weights = weights
 
     def decode3shape(self, coloring_result):
@@ -33,8 +40,10 @@ class AutoColoring:
         result = np.zeros((*self.size, 3))
 
         for i in range(self.size[0]):
-            for j in range(self.size[0]):
-                result[i, j] = coloring_result[:, i, j]
+            for j in range(self.size[1]):
+                result[i, j] = coloring_result[:, j, i]
+
+        result = np.fliplr(np.rot90(result, 3))
 
         return result
 
@@ -100,7 +109,7 @@ if __name__ == '__main__':
 
     auto_coloring = AutoColoring(content_path=f"{project_path}/test_image/content.jpg",
                                  style_paths=[f"{project_path}/test_image/style_house.jpg"],
-                                 size=(128, 128), weights=[1.0])
+                                 weights=[1.0])
 
     coloring_result = auto_coloring.result_()
 
