@@ -24,5 +24,5 @@ art_classification
 
 2. predict(x: torch.tensor)
 # input x는 preprocessing된 결과에 .to(device)를 해주어야 한다.
-# output은 ["abstract", "cityscape", "landscape", "portrait", "still-life"] 중에 하나이다.
+# output은 ["cityscape", "landscape", "portrait"] 중에 하나이다.
 ```
