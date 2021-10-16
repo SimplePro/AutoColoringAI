@@ -97,7 +97,7 @@ def preprocessing(x):
 
 # x shape of (1, 3, 128, 128)
 def predict(x):
-    label_dir = {0: "abstract", 1: "cityscape", 2: "landscape", 3: "portrait", 4: "still-life"}
+    label_dir = {0: "cityscape", 1: "landscape", 2: "portrait"}
 
     pred = torch.argmax(art_model(x)).item()
     predict_label = label_dir[pred]
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     project_path = get_abspath.project_abspath()
 
-    img_path = f"{project_path}/dataset/abstract/ (1).jpg"
+    img_path = f"{project_path}/dataset/test/cityscape/(6001).jpg"
 
     test_label = result_(img_path)
     print(test_label)
@@ -146,10 +146,10 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    dir = os.listdir(f"{project_path}/dataset/abstract/")
+    dir = os.listdir(f"{project_path}/dataset/test/cityscape/")
     print(len(dir))
 
     for path in dir:
-        print(mse_loss(f"{project_path}/dataset/abstract/ (1).jpg", f"{project_path}/dataset/abstract/{path}"), end="\r")
+        print(mse_loss(f"{project_path}/dataset/test/cityscape/(6001).jpg", f"{project_path}/dataset/test/cityscape/{path}"))
 
     print(time.time() - start_time)
