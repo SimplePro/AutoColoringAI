@@ -9,7 +9,7 @@
 2. AutoColoringAI - main - module 안에 있는 setup.bat 파일을 실행한다. (필요한 라이브러리 설치하기 위함)   
   
 3. datset  
-- https://drive.google.com/file/d/1Bwba4iYhx_M8aZT-lTKtJ0Pa0OClNsck/view?usp=sharing  
+- https://drive.google.com/file/d/1gioIhnckV_xOV3TD-lrk12Jdk-oHL0Wx/view?usp=sharing  
 - 다운로드를 받고 AutoColoringAI 폴더 안에 압축을 풀어주면 된다.  
 - 미술작품 추천을 하기 위함.  
 - 출처: https://www.kaggle.com/ipythonx/wikiart-gangogh-creating-art-gan/version/1?select=abstract  
