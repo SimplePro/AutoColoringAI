@@ -47,14 +47,14 @@ class RecommendArtThread(QThread):
         sketch_topic = art_classification.result_(sketch_path)
 
         # 같은 종류의 미술 작품들 리스트
-        art_dir = os.listdir(f"{project_path}/dataset/art_recommend/{sketch_topic}/")
+        art_dir = os.listdir(f"{project_path}/art_recommend/{sketch_topic}/")
 
         # 유사도가 높은 상위 20개의 미술작품
         recommend_art20 = []
 
         # 먼저 20개 미술작품 추가.
         for i in range(20):
-            filepath = f"{project_path}/dataset/art_recommend/{sketch_topic}/{art_dir[i]}"
+            filepath = f"{project_path}/art_recommend/{sketch_topic}/{art_dir[i]}"
             recommend_art20.append((filepath, art_classification.mse_loss(sketch_path, filepath)))
 
         # 유사도 오름차순 정렬
@@ -64,7 +64,7 @@ class RecommendArtThread(QThread):
         for i in range(20, len(art_dir)):
             loss_list = [i[1] for i in recommend_art20]
 
-            filepath = f"{project_path}/dataset/art_recommend/{sketch_topic}/{art_dir[i]}"
+            filepath = f"{project_path}/art_recommend/{sketch_topic}/{art_dir[i]}"
 
             loss = art_classification.mse_loss(sketch_path, filepath)
 
@@ -82,7 +82,7 @@ class RecommendArtThread(QThread):
         self.parent.btn_enabled(True)
 
         for i in recommend_art20:
-            filepath = f"{project_path}/dataset/art_recommend/{sketch_topic}/{i[0]}"
+            filepath = f"{project_path}/art_recommend/{sketch_topic}/{i[0]}"
             icon = QIcon(filepath)
             self.parent.recommend_art_path_list.addItem(QListWidgetItem(icon, filepath))
 
@@ -280,7 +280,7 @@ class MyApp(QMainWindow):
 
         self.btn_enabled(False)
 
-        if 0 < sum(coloring_weights) < 1:
+        if 0 < sum(coloring_weights) <= 1:
             try:
                 result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights).result_()
                 result = (result - result.min()) / (result.max() - result.min())  # 정규화
