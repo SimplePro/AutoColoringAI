@@ -73,7 +73,7 @@ class RecommendArtThread(QThread):
                 recommend_art20.insert(idx, (art_dir[i], loss))
                 recommend_art20.pop()
 
-            self.parent.progress_label.setText(f"진행률: {round(i / 30, 2)}%")
+            self.parent.progress_label.setText(f"진행률: {round(i / 6, 2)}%")
 
         self.parent.progress_label.setText(f"진행률: 100%")
 
@@ -280,7 +280,7 @@ class MyApp(QMainWindow):
 
         self.btn_enabled(False)
 
-        if sum(coloring_weights) == 1:
+        if 0 < sum(coloring_weights) < 1:
             try:
                 result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights).result_()
                 result = (result - result.min()) / (result.max() - result.min())  # 정규화
