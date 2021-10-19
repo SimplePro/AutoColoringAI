@@ -60,10 +60,10 @@ class Classification(nn.Module):
         self.fc1 = nn.Linear(512 * 16 * 16, 100, bias=True)
         torch.nn.init.xavier_uniform_(self.fc1.weight)
 
-        self.fc2 = nn.Linear(100, 30, bias=True)
+        self.fc2 = nn.Linear(100, 50, bias=True)
         torch.nn.init.xavier_uniform_(self.fc2.weight)
         
-        self.fc3 = nn.Linear(30, 3, bias=True)
+        self.fc3 = nn.Linear(50, 3, bias=True)
         torch.nn.init.xavier_uniform_(self.fc3.weight)
         
         self.relu = nn.LeakyReLU(0.2)
