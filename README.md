@@ -15,7 +15,7 @@
 - 출처: https://www.kaggle.com/ipythonx/wikiart-gangogh-creating-art-gan/version/1?select=abstract  
 
 4. pre-trained  
-- https://drive.google.com/file/d/1212FDFmMPOOn2NRhItbvEwJDTB_kc7sT/view?usp=sharing  
+- https://drive.google.com/file/d/1YH3oOnfxViKceOPigALHpvzB7d1YGj9e/view?usp=sharing  
 - 다운로드를 받고 AutoColoringAI - main 폴더 안에 압축을 풀어주면 된다.  
 - 사전학습된 모델들을 사용하여 예측 및 style transfer를 진행하기 위함.  
   
