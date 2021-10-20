@@ -19,3 +19,5 @@
 - 다운로드를 받고 AutoColoringAI - main 폴더 안에 압축을 풀어주면 된다.  
 - 사전학습된 모델들을 사용하여 예측 및 style transfer를 진행하기 위함.  
   
+5. 실행  
+- AutoColoringAI - main - module - program.py 를 실행하면 프로그램이 실행된다.
