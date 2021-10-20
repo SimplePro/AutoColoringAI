@@ -8,7 +8,7 @@ import numpy as np
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QApplication, QPushButton, QLabel, QFileDialog, QMainWindow, QListWidget, QDesktopWidget, \
-    QListWidgetItem, QDoubleSpinBox
+    QListWidgetItem, QDoubleSpinBox, QMessageBox
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5 import QtCore
 
@@ -236,7 +236,7 @@ class MyApp(QMainWindow):
     # 미술 작품 추가 버튼이 클릭됐을 때 실행되는 메소드.
     def clicked_add_art(self):
         if sketch_path != '':
-            user_img = QFileDialog.getOpenFileName(self, "미술 작품 추가", "", "image file(*.png *jpg *jpeg)")[0]
+            user_img = QFileDialog.getOpenFileName(self, "미술 작품 추가", f"{project_path}/art_recommend/", "image file(*.png *jpg *jpeg)")[0]
 
             if user_img != '':
                 icon = QIcon(user_img)
@@ -281,12 +281,11 @@ class MyApp(QMainWindow):
         self.btn_enabled(False)
 
         if 0 < sum(coloring_weights) <= 1:
-            try:
-                result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights).result_()
-                result = (result - result.min()) / (result.max() - result.min())  # 정규화
+            result = AutoColoring(content_path=sketch_path, style_paths=coloring_art, weights=coloring_weights).result_()
+            result = (result - result.min()) / (result.max() - result.min())  # 정규화
 
-            except Exception as err:
-                print(err)
+        else:
+            QMessageBox.warning(self, "Warning!", "적용도는 0 ~ 100(%)의 범위를 벗어나면 안됩니다.", QMessageBox.Yes)
             
         self.btn_enabled(True)
 
